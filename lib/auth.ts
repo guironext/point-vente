@@ -67,8 +67,12 @@ export async function getCurrentUser() {
 
 export async function requireUser() {
   const user = await getCurrentUser();
-  if (!user) redirect("/connexion");
-  return user;
+  if (user) return user;
+  const jar = await cookies();
+  if (jar.get(SESSION_COOKIE)?.value) {
+    redirect("/api/session/clear");
+  }
+  redirect("/connexion");
 }
 
 export async function requireActiveUser() {

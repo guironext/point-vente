@@ -23,7 +23,17 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { error: "Email et mot de passe requis." };
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  let user;
+  try {
+    user = await prisma.user.findUnique({ where: { email } });
+  } catch (error) {
+    console.error("loginAction", error);
+    return {
+      error:
+        "Connexion impossible pour le moment. La base de données n'est pas joignable.",
+    };
+  }
+
   if (!user) return { error: "Identifiants incorrects." };
 
   const ok = await bcrypt.compare(password, user.passwordHash);
@@ -36,7 +46,16 @@ export async function loginAction(
     return { error: "Ce compte est suspendu. Contactez l'administrateur." };
   }
 
-  await createSession(user.id, user.role);
+  try {
+    await createSession(user.id, user.role);
+  } catch (error) {
+    console.error("loginAction", error);
+    return {
+      error:
+        "Connexion impossible pour le moment. La base de données n'est pas joignable.",
+    };
+  }
+
   if (user.status === "PENDING_VALIDATION") redirect("/onboarding");
   redirect(sessionBase(user.role));
 }

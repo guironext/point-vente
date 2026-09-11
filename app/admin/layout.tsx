@@ -7,5 +7,16 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await requireSessionRole("ADMIN");
-  return <AdminShell user={user}>{children}</AdminShell>;
+  return (
+    <AdminShell
+      user={{
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      }}
+    >
+      {children}
+    </AdminShell>
+  );
 }

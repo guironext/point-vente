@@ -7,5 +7,16 @@ export default async function GerantLayout({
   children: React.ReactNode;
 }) {
   const user = await requireSessionRole("GERANT");
-  return <GerantShell user={user}>{children}</GerantShell>;
+  return (
+    <GerantShell
+      user={{
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      }}
+    >
+      {children}
+    </GerantShell>
+  );
 }

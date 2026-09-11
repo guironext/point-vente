@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { ROLE_COOKIE, SESSION_COOKIE } from "@/lib/constants";
 
-const PUBLIC_PREFIXES = ["/connexion", "/inscription"];
+const PUBLIC_PREFIXES = ["/connexion", "/inscription", "/api/session"];
 
 const ROLE_HOMES = {
   ADMIN: "/admin",
@@ -36,12 +36,6 @@ export function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/connexion";
     url.searchParams.set("next", pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (hasSession && (pathname === "/connexion" || pathname === "/inscription")) {
-    const url = request.nextUrl.clone();
-    url.pathname = homeFromRole(cookieRole);
     return NextResponse.redirect(url);
   }
 

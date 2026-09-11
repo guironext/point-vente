@@ -12,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import { SessionShell } from "@/components/session-shell";
+import type { HeaderUser } from "@/components/app-header";
 
 const ADMIN_NAV = [
   { href: "/admin", label: "Accueil", icon: LayoutDashboard, exact: true },
@@ -29,7 +30,7 @@ export function AdminShell({
   user,
   children,
 }: {
-  user: { firstName: string; lastName: string; email: string };
+  user: HeaderUser;
   children: React.ReactNode;
 }) {
   return (

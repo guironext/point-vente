@@ -7,5 +7,16 @@ export default async function VendeurLayout({
   children: React.ReactNode;
 }) {
   const user = await requireSessionRole("VENDEUR");
-  return <VendeurShell user={user}>{children}</VendeurShell>;
+  return (
+    <VendeurShell
+      user={{
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      }}
+    >
+      {children}
+    </VendeurShell>
+  );
 }

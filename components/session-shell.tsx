@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import { LogOut, Menu, X } from "lucide-react";
+import { LogOut, X } from "lucide-react";
+import { AppHeader, type HeaderUser } from "@/components/app-header";
 import { logoutAction } from "@/lib/actions/auth";
 import { cn, fullName } from "@/lib/utils";
 import { Mark } from "@/components/mark";
@@ -20,7 +21,6 @@ export function SessionShell({
   homeHref,
   items,
   subtitle,
-  homeLabel,
   roleLabel,
   accent,
   user,
@@ -32,16 +32,11 @@ export function SessionShell({
   homeLabel: string;
   roleLabel: string;
   accent: "brand" | "depot" | "seller";
-  user: { firstName: string; lastName: string; email: string };
+  user: HeaderUser;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const current = items.find((item) =>
-    item.exact
-      ? pathname === item.href
-      : pathname === item.href || pathname.startsWith(`${item.href}/`),
-  );
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -73,7 +68,7 @@ export function SessionShell({
               >
                 <Mark className="h-10 w-10 shrink-0" />
                 <div className="min-w-0">
-                  <p className="display text-xl leading-none">Point Vente</p>
+                  <p className="display text-xl leading-none">Afrik-Event</p>
                   <p className="mt-1 truncate text-[11px] uppercase tracking-[0.16em] text-white/60">
                     {subtitle}
                   </p>
@@ -139,29 +134,11 @@ export function SessionShell({
           />
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="safe-top sticky top-0 z-20 border-b border-line bg-paper/90 px-3 py-2.5 backdrop-blur lg:hidden">
-            <div className="flex items-center justify-between gap-2">
-              <button
-                onClick={() => setOpen(true)}
-                className="rounded-xl p-2 text-brand hover:bg-background"
-                aria-label="Ouvrir le menu"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              <div className="min-w-0 text-center">
-                <p className="display truncate text-lg leading-none text-brand">
-                  {current?.label ?? homeLabel}
-                </p>
-                <p className="mt-0.5 truncate text-[10px] uppercase tracking-[0.16em] text-stone-400">
-                  {roleLabel}
-                </p>
-              </div>
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-[11px] font-semibold text-white">
-                {user.firstName.charAt(0)}
-                {user.lastName.charAt(0)}
-              </span>
-            </div>
-          </header>
+          <AppHeader
+            user={user}
+            showMenuButton
+            onOpenMenu={() => setOpen(true)}
+          />
           <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
             {children}
           </main>

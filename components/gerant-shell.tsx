@@ -10,6 +10,7 @@ import {
   Truck,
 } from "lucide-react";
 import { SessionShell } from "@/components/session-shell";
+import type { HeaderUser } from "@/components/app-header";
 
 const GERANT_NAV = [
   { href: "/gerant", label: "Accueil", icon: LayoutDashboard, exact: true },
@@ -25,7 +26,7 @@ export function GerantShell({
   user,
   children,
 }: {
-  user: { firstName: string; lastName: string; email: string };
+  user: HeaderUser;
   children: React.ReactNode;
 }) {
   return (

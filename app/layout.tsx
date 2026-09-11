@@ -18,7 +18,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Point Vente — Gestion des boissons",
+  title: "Afrik-Event — Gestion des boissons",
   description:
     "Logiciel de gestion des ventes, stocks, casiers et cartons de boissons.",
 };

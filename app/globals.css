@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f3ece0;
+  --foreground: #1c1917;
+  --brand: #14352c;
+  --brand-2: #1f4f42;
+  --copper: #c45c26;
+  --paper: #fffdf8;
+  --line: #e4d9c8;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-copper: var(--copper);
+  --color-paper: var(--paper);
+  --color-line: var(--line);
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background:
+    radial-gradient(1200px 480px at 0% -10%, rgba(196, 92, 38, 0.08), transparent 55%),
+    radial-gradient(900px 420px at 100% 0%, rgba(20, 53, 44, 0.08), transparent 50%),
+    var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--copper) 28%, white);
+}
+
+.display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

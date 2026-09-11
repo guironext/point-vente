@@ -16,6 +16,7 @@ import { requireRoles } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { roleLabels } from "@/lib/labels";
 import { fullName, formatDate } from "@/lib/utils";
+import { getAppUrl } from "@/lib/app-url";
 import { validateUserAction } from "@/lib/actions/team";
 import type { Role } from "@/lib/types";
 
@@ -57,7 +58,7 @@ export default async function TeamPage() {
     updatedAt: user.updatedAt.toISOString(),
   }));
   const openInvites = invitations as OpenInvite[];
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+  const appUrl = await getAppUrl();
   const pending = users.filter((u) => u.status === "PENDING_VALIDATION");
   const activeCount = users.filter((u) => u.status === "ACTIVE").length;
 

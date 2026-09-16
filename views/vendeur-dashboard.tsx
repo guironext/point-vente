@@ -38,6 +38,12 @@ export default async function VendeurDashboardPage() {
         >
           Mes commandes
         </Link>
+        <Link
+          href="/vendeur/comptabilite"
+          className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
+        >
+          Caisse
+        </Link>
       </DashboardHero>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">

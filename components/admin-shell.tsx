@@ -17,11 +17,11 @@ import type { HeaderUser } from "@/components/app-header";
 const ADMIN_NAV = [
   { href: "/admin", label: "Accueil", icon: LayoutDashboard, exact: true },
   { href: "/admin/equipe", label: "Équipe", icon: Users },
-  { href: "/admin/commandes", label: "Commandes", icon: ShoppingCart },
+  { href: "/admin/approvisionnements", label: "Approvisionnements", icon: ShoppingCart },
   { href: "/admin/stock", label: "Stock", icon: Boxes },
+  { href: "/admin/factures", label: "Factures", icon: Receipt },
   { href: "/admin/fournisseurs", label: "Fournisseurs", icon: ClipboardList },
   { href: "/admin/produits", label: "Boissons", icon: Package },
-  { href: "/admin/factures", label: "Factures", icon: Receipt },
   { href: "/admin/comptabilite", label: "Comptabilité", icon: CreditCard },
   { href: "/admin/parametres", label: "Paramètres", icon: Settings },
 ];

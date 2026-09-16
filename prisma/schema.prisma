@@ -54,6 +54,14 @@ enum StockMovementType {
   ADJUST
 }
 
+enum CashOutflowReason {
+  DEPENSE
+  VERSEMENT
+  ACHAT
+  ECART
+  AUTRE
+}
+
 enum CustomerOrderStatus {
   DRAFT
   CONFIRMED
@@ -86,6 +94,7 @@ model User {
   customerOrders    CustomerOrder[]     @relation("OrdersCreated")
   deliveries        CustomerOrder[]     @relation("OrdersDelivered")
   customerPayments  CustomerPayment[]
+  cashOutflows      CashOutflow[]
   auditLogs         AuditLog[]
 }
 
@@ -119,6 +128,8 @@ model Product {
   unitSalePrice      Int
   lowStockThreshold  Int         @default(24)
   active             Boolean     @default(true)
+  supplierId         String?
+  supplier           Supplier?   @relation(fields: [supplierId], references: [id])
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 
@@ -152,6 +163,7 @@ model Supplier {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 
+  products       Product[]
   purchaseOrders PurchaseOrder[]
   invoices       SupplierInvoice[]
 }
@@ -243,6 +255,9 @@ model StockMovement {
   product       Product           @relation(fields: [productId], references: [id])
   quantityUnits Int
   type          StockMovementType
+  stockIncome   Int               @default(0)
+  stockOut      Int               @default(0)
+  stockRemain   Int               @default(0)
   referenceType String
   referenceId   String
   notes         String            @default("")
@@ -293,6 +308,18 @@ model CustomerPayment {
   createdById String
   createdBy   User          @relation(fields: [createdById], references: [id])
   notes       String        @default("")
+}
+
+model CashOutflow {
+  id          String            @id @default(cuid())
+  amount      Int
+  method      PaymentMethod     @default(CASH)
+  reason      CashOutflowReason
+  notes       String            @default("")
+  paidAt      DateTime          @default(now())
+  createdById String
+  createdBy   User              @relation(fields: [createdById], references: [id])
+  createdAt   DateTime          @default(now())
 }
 
 model AuditLog {

@@ -1,4 +1,5 @@
 import type {
+  CashOutflowReason,
   CustomerOrderStatus,
   PackagingType,
   PaymentMethod,
@@ -53,6 +54,14 @@ export const paymentMethodLabels: Record<PaymentMethod, string> = {
   MOBILE_MONEY: "Mobile money",
   CHECK: "Chèque",
   OTHER: "Autre",
+};
+
+export const cashOutflowReasonLabels: Record<CashOutflowReason, string> = {
+  DEPENSE: "Dépense",
+  VERSEMENT: "Versement au Responsable",
+  ACHAT: "Achat divers",
+  ECART: "Écart de caisse",
+  AUTRE: "Autre",
 };
 
 export const saleStatusLabels: Record<CustomerOrderStatus, string> = {

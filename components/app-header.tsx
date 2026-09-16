@@ -85,7 +85,7 @@ export function AppHeader({
   }
 
   return (
-    <header className="safe-top sticky top-0 z-20 border-b border-line bg-paper/90 backdrop-blur">
+    <header className="safe-top sticky top-0 z-20 border-b border-line bg-paper/90 backdrop-blur print:hidden">
       <div className="flex items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 lg:px-6">
         {showMenuButton ? (
           <button

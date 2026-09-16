@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { createHash, randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
 import type { Role } from "@/lib/types";
@@ -48,7 +49,7 @@ export async function destroySession() {
   jar.delete(ROLE_COOKIE);
 }
 
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   const jar = await cookies();
   const token = jar.get(SESSION_COOKIE)?.value;
   if (!token) return null;
@@ -63,7 +64,7 @@ export async function getCurrentUser() {
     return null;
   }
   return session.user;
-}
+});
 
 export async function requireUser() {
   const user = await getCurrentUser();

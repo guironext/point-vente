@@ -55,8 +55,10 @@ export const ROLE_NAV: Record<
   ],
   VENDEUR: [
     { href: "/", label: "Accueil" },
-    { href: "/ventes", label: "Commandes" },
+    { href: "/commandes", label: "Commandes" },
     { href: "/stock", label: "Stock" },
+    { href: "/factures", label: "Factures" },
+    { href: "/comptabilite", label: "Comptabilité" },
   ],
 };
 

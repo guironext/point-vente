@@ -18,9 +18,17 @@ type CatalogProduct = {
 export function NewCommandeButton({
   suppliers,
   products,
+  label = "Nouvelle Commande",
+  title = "Nouvelle commande",
+  returnTo = "commandes",
+  submitLabel,
 }: {
   suppliers: { id: string; name: string }[];
   products: CatalogProduct[];
+  label?: string;
+  title?: string;
+  returnTo?: "commandes" | "achats" | "approvisionnements";
+  submitLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -28,10 +36,10 @@ export function NewCommandeButton({
     <>
       <Button type="button" onClick={() => setOpen(true)}>
         <Plus className="mr-2 h-4 w-4" />
-        Nouvelle Commande
+        {label}
       </Button>
       {open ? (
-        <CommandeModal title="Nouvelle commande" onClose={() => setOpen(false)}>
+        <CommandeModal title={title} onClose={() => setOpen(false)}>
           {suppliers.length === 0 || products.length === 0 ? (
             <p className="text-sm text-stone-600">
               Ajoutez d&apos;abord un fournisseur et au moins une boisson.
@@ -40,7 +48,8 @@ export function NewCommandeButton({
             <PurchaseForm
               suppliers={suppliers}
               products={products}
-              returnTo="commandes"
+              returnTo={returnTo}
+              submitLabel={submitLabel}
             />
           )}
         </CommandeModal>

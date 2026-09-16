@@ -1,19 +1,11 @@
-import { ProductForm } from "@/components/forms";
 import {
-  Badge,
-  Card,
-  PageHeader,
-  Table,
-  Td,
-  Th,
-} from "@/components/ui";
+  ProductsWorkspace,
+  type ProductCard,
+} from "@/components/products-workspace";
+import { PageHeader, StatCard } from "@/components/ui";
 import { requireRoles } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { pathFor } from "@/lib/session";
-import { packagingLabels } from "@/lib/labels";
-import { formatMoney } from "@/lib/utils";
 import { getStockByProduct } from "@/lib/stock";
-import Link from "next/link";
 import type { PackagingType } from "@/lib/types";
 
 type ProductRow = {
@@ -23,71 +15,97 @@ type ProductRow = {
   volume: string;
   unitPurchasePrice: number;
   unitSalePrice: number;
+  lowStockThreshold: number;
   active: boolean;
+  supplierId: string | null;
   packagings: { type: PackagingType; unitsPerPack: number }[];
+  supplier: { name: string } | null;
+  _count: {
+    purchaseLines: number;
+    receiptLines: number;
+    stockMovements: number;
+    saleLines: number;
+  };
 };
 
 export default async function ProductsPage() {
-  const user = await requireRoles(["ADMIN", "GERANT"]);
-  const products = (await prisma.product.findMany({
-    include: { packagings: true },
-    orderBy: { name: "asc" },
-  })) as ProductRow[];
-  const stock = await getStockByProduct(products.map((product) => product.id));
+  await requireRoles(["ADMIN", "GERANT"]);
+  const [rows, suppliers] = (await Promise.all([
+    prisma.product.findMany({
+      include: {
+        packagings: true,
+        supplier: { select: { name: true } },
+        _count: {
+          select: {
+            purchaseLines: true,
+            receiptLines: true,
+            stockMovements: true,
+            saleLines: true,
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    }),
+    prisma.supplier.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+  ])) as unknown as [ProductRow[], { id: string; name: string }[]];
+  const stock = await getStockByProduct(rows.map((product) => product.id));
+
+  const products: ProductCard[] = rows.map((product) => ({
+    id: product.id,
+    name: product.name,
+    brand: product.brand,
+    volume: product.volume,
+    unitPurchasePrice: product.unitPurchasePrice,
+    unitSalePrice: product.unitSalePrice,
+    lowStockThreshold: product.lowStockThreshold,
+    active: product.active,
+    remaining: stock.get(product.id)?.remaining ?? 0,
+    supplierId: product.supplierId,
+    supplierName: product.supplier?.name ?? null,
+    packagings: product.packagings,
+    linkedCount:
+      product._count.purchaseLines +
+      product._count.receiptLines +
+      product._count.stockMovements +
+      product._count.saleLines,
+  }));
+
+  const active = products.filter((product) => product.active).length;
+  const low = products.filter(
+    (product) => product.remaining <= product.lowStockThreshold,
+  ).length;
+  const linkedSuppliers = new Set(
+    products.map((product) => product.supplierName).filter(Boolean),
+  ).size;
 
   return (
-    <div>
+    <div className="pb-6">
       <PageHeader
         eyebrow="Catalogue"
         title="Boissons"
         description="Chaque boisson se compte en unités. Casier et carton sont des conditionnements."
       />
-      <Card className="mb-6">
-        <h2 className="display mb-4 text-xl text-brand">Ajouter une boisson</h2>
-        <ProductForm />
-      </Card>
-      <Card>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Boisson</Th>
-              <Th>Conditionnements</Th>
-              <Th>Achat / Vente</Th>
-              <Th>Stock</Th>
-              <Th>État</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.id}>
-                <Td>
-                  <Link href={pathFor(user.role, `/produits/${product.id}`)} className="font-semibold text-brand">
-                    {product.brand} {product.name}
-                  </Link>
-                  <div className="text-xs text-stone-500">{product.volume}</div>
-                </Td>
-                <Td>
-                  {product.packagings
-                    .map(
-                      (pack) =>
-                        `${packagingLabels[pack.type]} × ${pack.unitsPerPack}`,
-                    )
-                    .join(" · ")}
-                </Td>
-                <Td>
-                  {formatMoney(product.unitPurchasePrice)} / {formatMoney(product.unitSalePrice)}
-                </Td>
-                <Td>{stock.get(product.id)?.remaining ?? 0} u.</Td>
-                <Td>
-                  <Badge tone={product.active ? "success" : "neutral"}>
-                    {product.active ? "Active" : "Inactive"}
-                  </Badge>
-                </Td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
+
+      <div className="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <StatCard label="Boissons" value={String(products.length)} />
+        <StatCard label="Actives" value={String(active)} />
+        <StatCard
+          label="Stock bas"
+          value={String(low)}
+          alert={low > 0}
+          hint="Sous le seuil d'alerte"
+        />
+        <StatCard
+          label="Fournisseurs"
+          value={String(linkedSuppliers)}
+          hint="Liés au catalogue"
+        />
+      </div>
+
+      <ProductsWorkspace products={products} suppliers={suppliers} />
     </div>
   );
 }

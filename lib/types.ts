@@ -19,6 +19,12 @@ export type PaymentMethod =
   | "CHECK"
   | "OTHER";
 export type StockMovementType = "IN" | "OUT" | "ADJUST";
+export type CashOutflowReason =
+  | "DEPENSE"
+  | "VERSEMENT"
+  | "ACHAT"
+  | "ECART"
+  | "AUTRE";
 export type CustomerOrderStatus =
   | "DRAFT"
   | "CONFIRMED"
@@ -39,4 +45,11 @@ export const PAYMENT_METHODS: PaymentMethod[] = [
   "MOBILE_MONEY",
   "CHECK",
   "OTHER",
+];
+export const CASH_OUTFLOW_REASONS: CashOutflowReason[] = [
+  "DEPENSE",
+  "VERSEMENT",
+  "ACHAT",
+  "ECART",
+  "AUTRE",
 ];

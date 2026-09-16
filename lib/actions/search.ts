@@ -61,12 +61,15 @@ export async function searchApp(query: string): Promise<SearchHit[]> {
   }
 
   for (const order of orders) {
+    const isFacture = order.reference.startsWith("FAC-");
     results.push({
       id: `order-${order.id}`,
-      href: pathFor(role, `${ordersSuffix(role)}/${order.id}`),
+      href: isFacture
+        ? pathFor(role, `/factures/${order.id}`)
+        : pathFor(role, `${ordersSuffix(role)}/${order.id}`),
       title: order.reference,
       subtitle: order.customerName,
-      group: "Commandes",
+      group: isFacture ? "Factures" : "Commandes",
     });
   }
 

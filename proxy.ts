@@ -83,7 +83,12 @@ function rewriteLegacyPath(pathname: string, role: string) {
   for (const prefix of prefixes) {
     if (pathname !== prefix && !pathname.startsWith(`${prefix}/`)) continue;
     if (prefix === "/equipe" && role !== "ADMIN") return home;
-    if (role === "VENDEUR" && prefix !== "/ventes" && prefix !== "/stock") {
+    if (
+      role === "VENDEUR" &&
+      prefix !== "/ventes" &&
+      prefix !== "/stock" &&
+      prefix !== "/factures"
+    ) {
       return home;
     }
     return `${home}${pathname}`;

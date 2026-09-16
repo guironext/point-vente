@@ -83,7 +83,7 @@ async function main() {
   for (const item of products) {
     await prisma.product.upsert({
       where: { id: item.id },
-      update: {},
+      update: { supplierId: soda.id },
       create: {
         id: item.id,
         name: item.name,
@@ -92,6 +92,7 @@ async function main() {
         unitPurchasePrice: item.unitPurchasePrice,
         unitSalePrice: item.unitSalePrice,
         lowStockThreshold: item.lowStockThreshold,
+        supplierId: soda.id,
         packagings: { create: item.packagings },
       },
     });

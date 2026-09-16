@@ -8,7 +8,7 @@ import {
   Td,
   Th,
 } from "@/components/ui";
-import { requireRoles } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { packagingLabels, purchaseStatusLabels } from "@/lib/labels";
 import { pathFor } from "@/lib/session";
@@ -44,9 +44,10 @@ function tone(status: PurchaseOrderStatus) {
 }
 
 export default async function CommandesPage() {
-  const user = await requireRoles(["ADMIN", "GERANT"]);
+  const user = await requireActiveUser();
   const [orders, suppliers, products] = (await Promise.all([
     prisma.purchaseOrder.findMany({
+      where: user.role === "VENDEUR" ? { createdById: user.id } : undefined,
       include: {
         supplier: true,
         lines: { include: { product: true, packaging: true } },
@@ -97,7 +98,12 @@ export default async function CommandesPage() {
                 <tr key={order.id}>
                   <Td>
                     <Link
-                      href={pathFor(user.role, `/achats/${order.id}`)}
+                      href={pathFor(
+                        user.role,
+                        user.role === "VENDEUR"
+                          ? `/commandes/${order.id}`
+                          : `/achats/${order.id}`,
+                      )}
                       className="font-semibold text-brand"
                     >
                       {order.reference}

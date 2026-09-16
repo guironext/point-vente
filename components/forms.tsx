@@ -1,9 +1,14 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useId, useState } from "react";
 import { loginAction, signupAction } from "@/lib/actions/auth";
 import { createInvoiceAction, createPaymentReceiptAction } from "@/lib/actions/invoices";
-import { createProductAction, createSupplierAction } from "@/lib/actions/catalog";
+import {
+  createProductAction,
+  createSupplierAction,
+  updateProductAction,
+  updateSupplierAction,
+} from "@/lib/actions/catalog";
 import { createPurchaseOrderAction, receivePurchaseAction } from "@/lib/actions/purchases";
 import { addCustomerPaymentAction, createSaleAction, deliverSaleAction } from "@/lib/actions/sales";
 import { adjustStockAction } from "@/lib/actions/stock";
@@ -236,80 +241,266 @@ export function LineEditor({
   );
 }
 
-export function ProductForm() {
-  const [state, action, pending] = useActionState(createProductAction, undefined);
+export function ProductForm({
+  suppliers,
+  product,
+  onSuccess,
+}: {
+  suppliers: { id: string; name: string }[];
+  product?: {
+    id: string;
+    name: string;
+    brand: string;
+    volume: string;
+    unitPurchasePrice: number;
+    unitSalePrice: number;
+    lowStockThreshold: number;
+    active: boolean;
+    supplierId: string | null;
+    casierUnits: number;
+    cartonUnits: number;
+  };
+  onSuccess?: () => void;
+}) {
+  const uid = useId();
+  const editing = Boolean(product);
+  const [state, action, pending] = useActionState(
+    editing ? updateProductAction : createProductAction,
+    undefined,
+  );
+
+  useEffect(() => {
+    if (state?.success) onSuccess?.();
+  }, [state?.success, onSuccess]);
+
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} className="space-y-3">
+      {product ? <input type="hidden" name="id" value={product.id} /> : null}
       <FieldError message={state?.error} />
-      <FieldSuccess message={state?.success} />
-      <div className="grid gap-3 sm:grid-cols-3">
+      {onSuccess ? null : <FieldSuccess message={state?.success} />}
+      <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <Label>Nom</Label>
-          <Input name="name" required placeholder="Castel Beer" />
+          <Label htmlFor={`${uid}-name`}>Nom</Label>
+          <Input
+            id={`${uid}-name`}
+            name="name"
+            required
+            placeholder="Castel Beer"
+            defaultValue={product?.name}
+          />
         </div>
         <div>
-          <Label>Marque</Label>
-          <Input name="brand" required placeholder="Castel" />
+          <Label htmlFor={`${uid}-brand`}>Marque</Label>
+          <Input
+            id={`${uid}-brand`}
+            name="brand"
+            required
+            placeholder="Castel"
+            defaultValue={product?.brand}
+          />
         </div>
         <div>
-          <Label>Volume</Label>
-          <Input name="volume" required placeholder="65 cl" />
-        </div>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div>
-          <Label>Prix d&apos;achat / unité (F)</Label>
-          <Input name="unitPurchasePrice" type="number" min={1} required />
-        </div>
-        <div>
-          <Label>Prix de vente / unité (F)</Label>
-          <Input name="unitSalePrice" type="number" min={1} required />
+          <Label htmlFor={`${uid}-volume`}>Volume</Label>
+          <Input
+            id={`${uid}-volume`}
+            name="volume"
+            required
+            placeholder="65 cl"
+            defaultValue={product?.volume}
+          />
         </div>
         <div>
-          <Label>Seuil d&apos;alerte (unités)</Label>
-          <Input name="lowStockThreshold" type="number" min={0} defaultValue={24} />
+          <Label htmlFor={`${uid}-supplier`}>Fournisseur</Label>
+          <Select
+            id={`${uid}-supplier`}
+            name="supplierId"
+            defaultValue={product?.supplierId ?? suppliers[0]?.id ?? ""}
+          >
+            <option value="">Aucun</option>
+            {suppliers.map((supplier) => (
+              <option key={supplier.id} value={supplier.id}>
+                {supplier.name}
+              </option>
+            ))}
+          </Select>
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <Label>Unités par casier</Label>
-          <Input name="casierUnits" type="number" min={0} placeholder="12" />
+          <Label htmlFor={`${uid}-purchase`}>Prix d&apos;achat / unité (F)</Label>
+          <Input
+            id={`${uid}-purchase`}
+            name="unitPurchasePrice"
+            type="number"
+            min={1}
+            required
+            defaultValue={product?.unitPurchasePrice}
+          />
         </div>
         <div>
-          <Label>Unités par carton</Label>
-          <Input name="cartonUnits" type="number" min={0} placeholder="24" />
+          <Label htmlFor={`${uid}-sale`}>Prix de vente / unité (F)</Label>
+          <Input
+            id={`${uid}-sale`}
+            name="unitSalePrice"
+            type="number"
+            min={1}
+            required
+            defaultValue={product?.unitSalePrice}
+          />
         </div>
       </div>
-      <Button disabled={pending}>{pending ? "Enregistrement…" : "Ajouter la boisson"}</Button>
+      <div>
+        <Label htmlFor={`${uid}-threshold`}>Seuil d&apos;alerte (unités)</Label>
+        <Input
+          id={`${uid}-threshold`}
+          name="lowStockThreshold"
+          type="number"
+          min={0}
+          defaultValue={product?.lowStockThreshold ?? 24}
+        />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label htmlFor={`${uid}-casier`}>Unités par casier</Label>
+          <Input
+            id={`${uid}-casier`}
+            name="casierUnits"
+            type="number"
+            min={0}
+            placeholder="12"
+            defaultValue={product?.casierUnits || undefined}
+          />
+        </div>
+        <div>
+          <Label htmlFor={`${uid}-carton`}>Unités par carton</Label>
+          <Input
+            id={`${uid}-carton`}
+            name="cartonUnits"
+            type="number"
+            min={0}
+            placeholder="24"
+            defaultValue={product?.cartonUnits || undefined}
+          />
+        </div>
+      </div>
+      {product ? (
+        <label
+          htmlFor={`${uid}-active`}
+          className="flex min-h-11 items-center gap-2 text-sm text-stone-700"
+        >
+          <input
+            id={`${uid}-active`}
+            type="checkbox"
+            name="active"
+            defaultChecked={product.active}
+            className="h-4 w-4 rounded border-line accent-brand"
+          />
+          Boisson active
+        </label>
+      ) : null}
+      <Button className="w-full" disabled={pending}>
+        {pending
+          ? "Enregistrement…"
+          : editing
+            ? "Enregistrer la boisson"
+            : "Ajouter la boisson"}
+      </Button>
     </form>
   );
 }
 
-export function SupplierForm() {
-  const [state, action, pending] = useActionState(createSupplierAction, undefined);
+export function SupplierForm({
+  supplier,
+  onSuccess,
+}: {
+  supplier?: {
+    id: string;
+    name: string;
+    contact: string;
+    address: string;
+    notes: string;
+    active: boolean;
+  };
+  onSuccess?: () => void;
+}) {
+  const uid = useId();
+  const editing = Boolean(supplier);
+  const [state, action, pending] = useActionState(
+    editing ? updateSupplierAction : createSupplierAction,
+    undefined,
+  );
+
+  useEffect(() => {
+    if (state?.success) onSuccess?.();
+  }, [state?.success, onSuccess]);
+
   return (
     <form action={action} className="space-y-3">
+      {supplier ? <input type="hidden" name="id" value={supplier.id} /> : null}
       <FieldError message={state?.error} />
-      <FieldSuccess message={state?.success} />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <Label>Nom</Label>
-          <Input name="name" required />
-        </div>
-        <div>
-          <Label>Contact</Label>
-          <Input name="contact" required />
-        </div>
+      {onSuccess ? null : <FieldSuccess message={state?.success} />}
+      <div>
+        <Label htmlFor={`${uid}-name`}>Nom</Label>
+        <Input
+          id={`${uid}-name`}
+          name="name"
+          required
+          autoComplete="organization"
+          placeholder="Brasserie, dépôt, importateur…"
+          defaultValue={supplier?.name}
+        />
       </div>
       <div>
-        <Label>Adresse</Label>
-        <Input name="address" />
+        <Label htmlFor={`${uid}-contact`}>Contact</Label>
+        <Input
+          id={`${uid}-contact`}
+          name="contact"
+          required
+          placeholder="Téléphone ou e-mail"
+          defaultValue={supplier?.contact}
+        />
       </div>
       <div>
-        <Label>Notes</Label>
-        <Textarea name="notes" />
+        <Label htmlFor={`${uid}-address`}>Adresse</Label>
+        <Input
+          id={`${uid}-address`}
+          name="address"
+          autoComplete="street-address"
+          placeholder="Ville, quartier, repère"
+          defaultValue={supplier?.address}
+        />
       </div>
-      <Button disabled={pending}>Enregistrer le fournisseur</Button>
+      <div>
+        <Label htmlFor={`${uid}-notes`}>Notes</Label>
+        <Textarea
+          id={`${uid}-notes`}
+          name="notes"
+          placeholder="Délais, conditions, interlocuteur…"
+          defaultValue={supplier?.notes}
+        />
+      </div>
+      {supplier ? (
+        <label
+          htmlFor={`${uid}-active`}
+          className="flex min-h-11 items-center gap-2 text-sm text-stone-700"
+        >
+          <input
+            id={`${uid}-active`}
+            type="checkbox"
+            name="active"
+            defaultChecked={supplier.active}
+            className="h-4 w-4 rounded border-line accent-brand"
+          />
+          Fournisseur actif
+        </label>
+      ) : null}
+      <Button className="w-full" disabled={pending}>
+        {pending
+          ? "Enregistrement…"
+          : editing
+            ? "Enregistrer les modifications"
+            : "Enregistrer le fournisseur"}
+      </Button>
     </form>
   );
 }
@@ -318,10 +509,12 @@ export function PurchaseForm({
   suppliers,
   products,
   returnTo,
+  submitLabel = "Créer la commande",
 }: {
   suppliers: { id: string; name: string }[];
   products: CatalogProduct[];
-  returnTo?: "commandes" | "achats";
+  returnTo?: "commandes" | "achats" | "approvisionnements";
+  submitLabel?: string;
 }) {
   const [state, action, pending] = useActionState(createPurchaseOrderAction, undefined);
   return (
@@ -346,7 +539,7 @@ export function PurchaseForm({
         <Label>Notes</Label>
         <Textarea name="notes" />
       </div>
-      <Button disabled={pending}>Créer la commande</Button>
+      <Button disabled={pending}>{pending ? "Enregistrement…" : submitLabel}</Button>
     </form>
   );
 }
@@ -518,14 +711,17 @@ export function DeliverForm({ orderId }: { orderId: string }) {
 export function CustomerPaymentForm({
   orderId,
   remaining,
+  taxed = false,
 }: {
   orderId: string;
   remaining: number;
+  taxed?: boolean;
 }) {
   const [state, action, pending] = useActionState(addCustomerPaymentAction, undefined);
   return (
     <form action={action} className="space-y-2">
       <input type="hidden" name="orderId" value={orderId} />
+      {taxed ? <input type="hidden" name="taxed" value="1" /> : null}
       <FieldError message={state?.error} />
       <FieldSuccess message={state?.success} />
       <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">

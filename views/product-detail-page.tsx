@@ -1,8 +1,8 @@
+import { ProductForm } from "@/components/forms";
+import { Card, PageHeader } from "@/components/ui";
 import { requireRoles } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { Card, Input, Label, PageHeader, Button } from "@/components/ui";
-import { updateProductAction } from "@/lib/actions/catalog";
 
 type ProductEdit = {
   id: string;
@@ -13,6 +13,8 @@ type ProductEdit = {
   unitSalePrice: number;
   lowStockThreshold: number;
   active: boolean;
+  supplierId: string | null;
+  packagings: { type: "CASIER" | "CARTON"; unitsPerPack: number }[];
 };
 
 export default async function ProductDetailPage({
@@ -28,63 +30,40 @@ export default async function ProductDetailPage({
   });
   if (!found) notFound();
   const product = found as ProductEdit;
+  const suppliers = await prisma.supplier.findMany({
+    where: product.supplierId
+      ? { OR: [{ active: true }, { id: product.supplierId }] }
+      : { active: true },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true },
+  });
 
   return (
     <div>
       <PageHeader
         eyebrow="Catalogue"
         title={`${product.brand} ${product.name}`}
-        description="Mise à jour des prix et du seuil d'alerte. Les conditionnements restent liés à la boisson."
+        description="Mise à jour des prix, du fournisseur et du seuil d'alerte."
       />
       <Card>
-        <form action={updateProductAction} className="space-y-4">
-          <input type="hidden" name="id" value={product.id} />
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <Label>Nom</Label>
-              <Input name="name" defaultValue={product.name} />
-            </div>
-            <div>
-              <Label>Marque</Label>
-              <Input name="brand" defaultValue={product.brand} />
-            </div>
-            <div>
-              <Label>Volume</Label>
-              <Input name="volume" defaultValue={product.volume} />
-            </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div>
-              <Label>Prix d&apos;achat</Label>
-              <Input
-                name="unitPurchasePrice"
-                type="number"
-                defaultValue={product.unitPurchasePrice}
-              />
-            </div>
-            <div>
-              <Label>Prix de vente</Label>
-              <Input
-                name="unitSalePrice"
-                type="number"
-                defaultValue={product.unitSalePrice}
-              />
-            </div>
-            <div>
-              <Label>Seuil</Label>
-              <Input
-                name="lowStockThreshold"
-                type="number"
-                defaultValue={product.lowStockThreshold}
-              />
-            </div>
-          </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="active" defaultChecked={product.active} />
-            Boisson active
-          </label>
-          <Button>Enregistrer</Button>
-        </form>
+        <ProductForm
+          suppliers={suppliers}
+          product={{
+            id: product.id,
+            name: product.name,
+            brand: product.brand,
+            volume: product.volume,
+            unitPurchasePrice: product.unitPurchasePrice,
+            unitSalePrice: product.unitSalePrice,
+            lowStockThreshold: product.lowStockThreshold,
+            active: product.active,
+            supplierId: product.supplierId,
+            casierUnits:
+              product.packagings.find((pack) => pack.type === "CASIER")?.unitsPerPack ?? 0,
+            cartonUnits:
+              product.packagings.find((pack) => pack.type === "CARTON")?.unitsPerPack ?? 0,
+          }}
+        />
       </Card>
     </div>
   );

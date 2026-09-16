@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { requireRoles, writeAudit } from "@/lib/auth";
+import { stockMovementCreates, applyStockLedger } from "@/lib/stock";
 import { revalidateSession } from "@/lib/revalidate";
 import type { ActionState } from "@/lib/actions/auth";
 
@@ -16,8 +17,8 @@ export async function adjustStockAction(
   if (!productId || !quantityUnits) {
     return { error: "Produit et quantité (positive ou négative) requis." };
   }
-  const movement = await prisma.stockMovement.create({
-    data: {
+  const movements = await stockMovementCreates([
+    {
       productId,
       quantityUnits,
       type: "ADJUST",
@@ -26,7 +27,11 @@ export async function adjustStockAction(
       notes: notes || "Ajustement manuel",
       createdById: user.id,
     },
+  ]);
+  const movement = await prisma.stockMovement.create({
+    data: movements.creates[0],
   });
+  await applyStockLedger(movements.ledger);
   await writeAudit(user.id, "adjust_stock", "StockMovement", movement.id);
   revalidateSession("/stock");
   return { success: "Ajustement de stock enregistré." };

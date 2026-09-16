@@ -50,7 +50,7 @@ export function SessionShell({
       <div className="flex min-h-dvh">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 flex w-[min(18.5rem,88vw)] flex-col text-white transition-transform duration-200 ease-out lg:static lg:w-72 lg:translate-x-0",
+            "fixed inset-y-0 left-0 z-40 flex w-[min(18.5rem,88vw)] flex-col text-white transition-transform duration-200 ease-out print:hidden lg:static lg:w-72 lg:translate-x-0",
             accent === "seller"
               ? "bg-[#3d2416]"
               : accent === "depot"
@@ -128,7 +128,7 @@ export function SessionShell({
         </aside>
         {open ? (
           <button
-            className="fixed inset-0 z-30 bg-black/45 backdrop-blur-[2px] lg:hidden"
+            className="fixed inset-0 z-30 bg-black/45 backdrop-blur-[2px] print:hidden lg:hidden"
             onClick={() => setOpen(false)}
             aria-label="Fermer"
           />
@@ -139,7 +139,7 @@ export function SessionShell({
             showMenuButton
             onOpenMenu={() => setOpen(true)}
           />
-          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-8 lg:px-8">
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-8 lg:px-8 print:max-w-none print:px-0 print:py-0">
             {children}
           </main>
         </div>

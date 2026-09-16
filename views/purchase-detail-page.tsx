@@ -5,9 +5,10 @@ import {
   cancelPurchaseOrderAction,
   sendPurchaseOrderAction,
 } from "@/lib/actions/purchases";
-import { requireRoles } from "@/lib/auth";
+import { requireActiveUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { packagingLabels, purchaseStatusLabels } from "@/lib/labels";
+import { canAdjustStock } from "@/lib/permissions";
 import { formatDate, fullName } from "@/lib/utils";
 import type { PackagingType, PurchaseOrderStatus } from "@/lib/types";
 
@@ -25,6 +26,7 @@ type PurchaseDetail = {
   reference: string;
   status: PurchaseOrderStatus;
   orderedAt: Date;
+  createdById: string;
   supplier: { name: string };
   createdBy: { firstName: string; lastName: string };
   lines: PurchaseLine[];
@@ -48,7 +50,7 @@ export default async function PurchaseDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireRoles(["ADMIN", "GERANT"]);
+  const user = await requireActiveUser();
   const { id } = await params;
   const found = await prisma.purchaseOrder.findUnique({
     where: { id },
@@ -77,7 +79,8 @@ export default async function PurchaseDetailPage({
   }
 
   const canReceive =
-    order.status === "SENT" || order.status === "PARTIALLY_RECEIVED";
+    canAdjustStock(user.role) &&
+    (order.status === "SENT" || order.status === "PARTIALLY_RECEIVED");
 
   return (
     <div>

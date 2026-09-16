@@ -37,17 +37,17 @@ export default async function AdminDashboardPage() {
           Gérer l&apos;équipe
         </Link>
         <Link
-          href="/admin/commandes/nouvelle"
+          href="/admin/approvisionnements/nouvelle"
           className="inline-flex h-11 w-full items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 text-sm font-semibold text-white transition hover:bg-white/15 sm:w-auto"
         >
-          Nouvelle Commande
+          Nouvelle Approvisionnement
         </Link>
       </DashboardHero>
 
       <ShortcutGrid
         items={[
           { href: "/admin/equipe", label: "Équipe", hint: "Invitations et validation" },
-          { href: "/admin/commandes", label: "Commandes", hint: "Commandes clients" },
+          { href: "/admin/approvisionnements", label: "Approvisionnements", hint: "Approvisionnements" },
           { href: "/admin/fournisseurs", label: "Fournisseurs", hint: "Commandes fournisseurs" },
           { href: "/admin/stock", label: "Stock", hint: "Inventaire des produits" },
         ]}
@@ -72,13 +72,13 @@ export default async function AdminDashboardPage() {
         <Card>
           <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className="display text-lg text-brand sm:text-xl">À livrer</h2>
-            <Link href="/admin/commandes" className="shrink-0 text-sm font-semibold text-copper">
+            <Link href="/admin/approvisionnements" className="shrink-0 text-sm font-semibold text-copper">
               Voir tout
             </Link>
           </div>
           <OpenSalesList
             orders={openSales}
-            hrefFor={(id) => `/admin/commandes/${id}`}
+            hrefFor={(id) => `/admin/approvisionnements/${id}`}
             empty="Aucune commande client ouverte."
           />
         </Card>
